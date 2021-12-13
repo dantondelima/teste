@@ -1,0 +1,41 @@
+<%-- any content can be specified here e.g.: --%>
+<%@page import="db.Access"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@ page pageEncoding="UTF-8" %>
+<%@page import="db.User"%>
+<h2>SthefanyAccessApp</h2>
+<%
+    String loginErrorMessage = null;
+    if(request.getParameter("do-login")!= null){
+        String login = request.getParameter("login");
+        String pass = request.getParameter("pass");
+        String datetime = request.getParameter("datetime");
+        try{
+            User u = User.getUser(login, pass);
+            if(u==null){
+                loginErrorMessage = "Login e/ou senha não encontrados";
+            }else{
+                session.setAttribute("me.username", u.getUsername());
+                Access.insertAccess(login, datetime);
+                response.sendRedirect(request.getRequestURI());
+            }
+        }catch(Exception ex){
+            loginErrorMessage = ex.getMessage();
+        }
+    }
+%>
+
+<%if(loginErrorMessage!=null){%>
+                <div style="color: red;"><%=loginErrorMessage%></div>
+<%}%>
+<%if(session.getAttribute("me.username") == null){%>
+    <form method="post">
+    Datetime:<input type="datetime-local" name="datetime" value="<%= new SimpleDateFormat("yyyy-MM-dd'T'hh:mm").format(new Date()) %>"/><br/>
+    Login:<br/>
+    <input type="text" name="login"/><br/>
+    Senha:<br/>
+    <input type="password" name="pass"/><br/><br/>
+    <input type="submit" name="do-login" value="Entrar"/>
+</form>
+<%} %>
